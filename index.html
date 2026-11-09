@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papelería JAYA – Anteproyecto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* === THEME: edita estas variables para cambiar todo el look === */
+:root{
+  --stage-bg:#030a1c; --slide-bg:#07122b;
+  --navy-2:#0d1f45; --navy-3:#14295a;
+  --ink:#eef3ff; --muted:#9fb0d6;
+  --cyan:#5ce1e6; --amber:#ffb547; --line:rgba(160,185,255,.18);
+  --font-display:'Fraunces',Georgia,serif;
+  --font-body:'Instrument Sans',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-body);color:var(--ink)}
+
+/* === VIEWPORT-BASE.CSS (obligatorio, escenario fijo 1920x1080) === */
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--stage-bg,#000)}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--stage-bg,#000)}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;background:var(--slide-bg,#fff)}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:var(--slide-bg,#fff)}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1}
+img,video,canvas,svg{max-width:100%;max-height:100%}
+.deck-controls{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:1000}
+@media print{
+  html,body{width:1920px;height:auto;overflow:visible;background:#fff}
+  .deck-viewport{position:static;overflow:visible;background:#fff}
+  .deck-stage{position:static;width:auto;height:auto;transform:none!important;background:none}
+  .slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  .deck-controls{display:none!important}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.2s!important}}
+
+/* === ATMÓSFERA DE FONDO: malla de puntos + resplandores === */
+.slide::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+   radial-gradient(900px 600px at 105% -10%,rgba(92,225,230,.16),transparent 60%),
+   radial-gradient(800px 600px at -10% 110%,rgba(255,181,71,.10),transparent 60%),
+   radial-gradient(rgba(160,185,255,.10) 2px,transparent 2.5px) 0 0/48px 48px;}
+.pad{position:absolute;inset:0;padding:96px 120px 110px}
+
+/* === TIPOGRAFÍA === */
+.eyebrow{font-size:24px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:20px}
+.eyebrow b{color:var(--amber);font-family:var(--font-display);font-size:30px;letter-spacing:0}
+.eyebrow::after{content:"";width:90px;height:2px;background:var(--line)}
+h2{font-family:var(--font-display);font-weight:800;font-size:88px;line-height:1.02;letter-spacing:-.02em;margin:22px 0 0}
+h2 em{font-style:italic;font-weight:400;color:var(--amber)}
+h3{font-family:var(--font-display);font-weight:600;font-size:38px;line-height:1.15}
+p,li{font-size:30px;line-height:1.4;color:var(--muted)}
+strong{color:var(--ink);font-weight:600}
+.card{background:linear-gradient(160deg,rgba(20,41,90,.75),rgba(13,31,69,.75));border:1px solid var(--line);border-radius:28px;padding:40px 44px}
+.tag{font-size:22px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.page{position:absolute;right:120px;bottom:44px;font-size:22px;letter-spacing:.2em;color:var(--muted)}
+
+/* === ANIMACIONES: entrada escalonada al activar la diapositiva === */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.slide.visible .reveal{opacity:1;transform:none}
+.slide.visible .d1{transition-delay:.10s}.slide.visible .d2{transition-delay:.22s}.slide.visible .d3{transition-delay:.34s}
+.slide.visible .d4{transition-delay:.46s}.slide.visible .d5{transition-delay:.58s}.slide.visible .d6{transition-delay:.70s}
+.slide.visible .d7{transition-delay:.82s}.slide.visible .d8{transition-delay:.94s}
+
+/* === 1 PORTADA === */
+.s-title .ring{position:absolute;right:-220px;top:-120px;width:1000px;height:1000px;border-radius:50%;
+  border:2px solid var(--line);box-shadow:0 0 0 90px rgba(92,225,230,.04),0 0 0 180px rgba(92,225,230,.025)}
+.s-title .brand{position:absolute;left:120px;top:96px;font-size:26px;letter-spacing:.3em;text-transform:uppercase;color:var(--cyan);font-weight:600}
+.s-title .brand i{display:inline-block;width:14px;height:14px;background:var(--amber);border-radius:50%;margin-right:18px}
+.s-title .main{position:absolute;left:120px;bottom:190px;width:1500px}
+.s-title h1{font-family:var(--font-display);font-weight:800;font-size:230px;line-height:.9;letter-spacing:-.035em}
+.s-title blockquote{margin-top:48px;font-size:38px;line-height:1.35;color:var(--muted);max-width:1300px;border-left:4px solid var(--amber);padding-left:36px}
+
+/* === 2 CONTEXTO === */
+.ctx{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:60px}
+.ctx .card{padding:34px 38px}
+.ctx .tag{display:block;margin-bottom:14px}
+.ctx p{font-size:29px;color:var(--ink)}
+.ctx .hi{grid-column:span 2;background:linear-gradient(120deg,rgba(255,181,71,.16),rgba(20,41,90,.7));border-color:rgba(255,181,71,.45)}
+.ctx .hi p{font-size:34px}
+
+/* === 3 PROBLEMÁTICA === */
+.prob{display:grid;grid-template-columns:1fr 1fr 520px;grid-template-rows:auto auto;gap:28px;margin-top:52px}
+.prob .card{padding:34px 40px}
+.prob h3{margin-bottom:12px;font-size:36px}
+.prob p{font-size:27px}
+.prob .num{font-family:var(--font-display);color:var(--amber);font-size:30px;font-style:italic;display:block;margin-bottom:8px}
+.prob .big{grid-column:3;grid-row:1/3;display:flex;flex-direction:column;justify-content:center;text-align:center;
+  background:radial-gradient(circle at 50% 0,rgba(255,181,71,.3),rgba(13,31,69,.9) 70%);border-color:rgba(255,181,71,.5)}
+.big .n{font-family:var(--font-display);font-weight:800;font-size:150px;line-height:1;color:var(--amber);letter-spacing:-.03em;margin:20px 0}
+.big .n small{display:block;font-size:56px;letter-spacing:.06em;color:var(--ink)}
+
+/* === 4 JUSTIFICACIÓN === */
+.just{display:grid;grid-template-columns:1.05fr 1fr;gap:70px;margin-top:56px;align-items:start}
+.just .why p{font-family:var(--font-display);font-size:46px;line-height:1.25;color:var(--ink);margin-top:20px}
+.just .why p em{color:var(--cyan)}
+.imp{display:grid;gap:22px}
+.imp .card{padding:28px 36px;display:flex;gap:30px;align-items:baseline}
+.imp .tag{width:200px;flex:none;color:var(--cyan)}
+.imp p{font-size:28px;color:var(--ink)}
+
+/* === 5 OBJETIVOS === */
+.gen{margin-top:44px;padding:36px 48px;border-radius:28px;border:1px solid rgba(92,225,230,.5);background:linear-gradient(120deg,rgba(92,225,230,.13),rgba(13,31,69,.7))}
+.gen .tag{color:var(--cyan);display:block;margin-bottom:12px}
+.gen p{font-size:29px;color:var(--ink);line-height:1.38}
+.obj{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:28px}
+.obj .card{padding:32px 38px}
+.obj .tag{display:block;margin-bottom:18px}
+.obj li{list-style:none;font-size:27px;color:var(--ink);padding:8px 0 8px 52px;position:relative;line-height:1.3}
+.obj li span{position:absolute;left:0;top:7px;font-family:var(--font-display);font-style:italic;font-weight:600;color:var(--amber);font-size:32px}
+
+/* === 6 ALCANCES === */
+.alc{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:48px}
+.alc .card{padding:34px 44px}
+.alc h3{margin-bottom:16px;display:flex;align-items:center;gap:18px}
+.alc h3 i{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--font-body);font-weight:700;font-size:26px;color:#07122b}
+.alc .yes h3 i{background:var(--cyan)} .alc .no h3 i{background:#ff7a6b} .alc .lim h3 i,.alc .res h3 i{background:var(--amber)}
+.alc li{list-style:none;font-size:27px;color:var(--ink);padding:7px 0 7px 30px;position:relative;line-height:1.3}
+.alc li::before{content:"";position:absolute;left:0;top:20px;width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.alc .yes{border-color:rgba(92,225,230,.4)} .alc .no{border-color:rgba(255,122,107,.4)}
+
+/* === 7 DESCRIPCIÓN === */
+.mods{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px}
+.mods .card{padding:28px 36px}
+.mods h3{font-size:34px;margin-bottom:8px;color:var(--cyan)}
+.mods p{font-size:26px;line-height:1.3}
+.flow3{display:flex;align-items:center;gap:20px;margin-top:30px}
+.flow3 .lab{font-size:22px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);width:240px;flex:none}
+.flow3 .st{flex:1;text-align:center;padding:22px;border-radius:999px;border:1px solid var(--line);background:var(--navy-2);font-size:28px;color:var(--ink);font-weight:500}
+.flow3 .ar{color:var(--amber);font-size:38px}
+
+/* === 8 ROLES Y TECNOLOGÍAS === */
+.rt{display:grid;grid-template-columns:880px 760px;gap:40px;margin-top:34px;align-items:start}
+.rt .left{display:grid;gap:24px}
+.rt .card{padding:34px 42px}
+.shot{background:#fff;border-radius:24px;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.45);border:1px solid var(--line)}
+.shot img{display:block;margin:0 auto;max-width:none;max-height:none}
+.rt .shot img{height:700px;width:auto}
+.rt .tech{grid-template-columns:repeat(3,1fr)}
+.rt .tech div{padding:18px 20px}
+.rt .tech b{font-size:30px;line-height:1.1}
+.rt .tech span{font-size:22px}
+.s-proc .shot{position:absolute;left:0;right:0;margin:0 auto;width:fit-content;top:140px;padding:8px}
+.s-proc .shot img{height:870px;width:auto}
+.rt .tag{display:block;margin-bottom:22px;color:var(--cyan)}
+.role{padding:22px 0;border-top:1px solid var(--line)}
+.role.first{border:0;padding-top:0}
+.role h3{margin-bottom:8px;color:var(--amber)}
+.role p{font-size:28px;color:var(--ink)}
+.tech{display:grid;gap:18px}
+.tech div{display:flex;flex-direction:column;padding:22px 28px;border-radius:20px;background:var(--navy-2);border:1px solid var(--line)}
+.tech b{font-family:var(--font-display);font-size:42px;font-weight:800;color:var(--ink)}
+.tech span{font-size:26px;color:var(--muted)}
+
+/* === 9 DIAGRAMA === */
+.diag{margin-top:26px}
+.diag svg{width:1680px;height:700px;max-height:none;max-width:none}
+.diag text{font-family:var(--font-body);font-size:25px;fill:var(--ink);text-anchor:middle;font-weight:500}
+.diag .sm{font-size:21px;fill:var(--muted)}
+.diag .lbl{font-size:22px;font-weight:700;fill:var(--amber)}
+.diag .box{fill:var(--navy-3);stroke:rgba(160,185,255,.45);stroke-width:2}
+.diag .dec{fill:rgba(92,225,230,.12);stroke:var(--cyan);stroke-width:2.5}
+.diag .bad{fill:rgba(255,122,107,.15);stroke:#ff7a6b;stroke-width:2.5}
+.diag .ok{fill:rgba(255,181,71,.15);stroke:var(--amber);stroke-width:2.5}
+.diag path.ln{fill:none;stroke:var(--muted);stroke-width:3}
+
+/* === 10 NORMAS === */
+.norm{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:48px}
+.norm .card{padding:34px 44px;position:relative;overflow:hidden}
+.norm .card::after{content:attr(data-n);position:absolute;right:30px;top:-6px;font-family:var(--font-display);font-weight:800;font-size:150px;color:rgba(160,185,255,.07)}
+.norm h3{font-size:36px;color:var(--cyan);margin-bottom:6px}
+.norm .tag{display:block;margin-bottom:14px}
+.norm p{font-size:27px;color:var(--ink);line-height:1.35;max-width:680px}
+
+/* === 11 CONCLUSIÓN === */
+.s-end .big-q{position:absolute;left:120px;right:120px;top:200px}
+.s-end h2{font-size:150px;margin:24px 0 50px}
+.s-end p.q{font-family:var(--font-display);font-size:58px;line-height:1.25;color:var(--ink);max-width:1560px}
+.s-end p.q em{color:var(--amber)}
+.s-end .gracias{position:absolute;left:120px;bottom:96px;font-family:var(--font-display);font-style:italic;font-size:64px;color:var(--cyan)}
+
+/* === CHROME DE LA PRESENTACIÓN (fuera del escenario) === */
+.progress{position:fixed;left:0;top:0;height:4px;width:0;background:linear-gradient(90deg,var(--cyan),var(--amber));z-index:1000;transition:width .5s var(--ease)}
+.hint{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);font:500 12px var(--font-body);color:#6f82ad;letter-spacing:.12em;z-index:1000;opacity:.8}
+body.editing [contenteditable]{outline:1px dashed var(--amber);outline-offset:4px}
+.edit-hotzone{position:fixed;top:0;left:0;width:80px;height:80px;z-index:10000}
+.edit-toggle{position:fixed;top:14px;left:14px;z-index:10001;opacity:0;pointer-events:none;transition:opacity .3s;background:var(--amber);border:0;border-radius:8px;padding:8px 12px;font:600 14px var(--font-body);cursor:pointer}
+.edit-toggle.show,.edit-toggle.active{opacity:1;pointer-events:auto}
+
+/* === OBJETIVOS (detalle): qué / mediante / para === */
+.od{display:grid;gap:24px;margin-top:34px}
+.orow{display:grid;grid-template-columns:96px 1fr;gap:30px;padding:28px 44px}
+.orow .on{font-family:var(--font-display);font-style:italic;font-weight:800;font-size:84px;line-height:1;color:var(--amber)}
+.orow h3{font-size:36px;margin-bottom:16px}
+.orow .cols{display:grid;grid-template-columns:1.5fr 1fr;gap:44px}
+.orow .tag{display:block;margin-bottom:6px;font-size:20px;color:var(--cyan)}
+.orow p{font-size:27px;line-height:1.35;color:var(--ink)}
+.od3 .orow{padding:22px 44px}.od3 .orow h3{font-size:33px;margin-bottom:10px}.od3 .orow p{font-size:25px}.od3 .orow .on{font-size:70px}
+.od2 .orow{padding:36px 48px}.od2 .orow p{font-size:30px}.od2 .orow h3{font-size:40px}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+<!-- ===== 1. PORTADA ===== -->
+
+<section class="slide s-title active">
+  <div class="ring"></div>
+  <div class="brand reveal"><i></i>Papelería JAYA · Ixil, Yucatán</div>
+  <div class="main">
+    <h1 class="reveal d1">Proyecto Jaya</h1>
+    <blockquote class="reveal d3">“En el contexto del hinduismo, "Jaya" simboliza la victoria y el triunfo, y es un concepto recurrente en diversas tradiciones. ”</blockquote>
+    
+  </div>
+</section>
+
+<!-- ===== 2. CONTEXTO ===== -->
+
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>01</b>Contexto del lugar</div>
+  <h2 class="reveal d1">Un comercio, <em>una libreta</em></h2>
+  <div class="ctx">
+    <div class="card reveal d2"><span class="tag">Lugar</span><p>Papelería JAYA, pequeño comercio en Ixil, Yucatán</p></div>
+    <div class="card reveal d3"><span class="tag">Personal</span><p>2 personas (propietario y un empleado)</p></div>
+    <div class="card reveal d4"><span class="tag">Usuarios</span><p>Administrador y vendedor</p></div>
+    <div class="card hi reveal d5"><span class="tag">Dato real</span><p>La libreta se mojó y reconstruir el inventario tomó de <strong>5 a 7 horas</strong></p></div>
+    <div class="card reveal d6"><span class="tag">Situación actual</span><p>Ventas, entradas, gastos y existencias en una sola libreta, sin equipo de cómputo</p></div>
+    <div class="card reveal d7" style="grid-column:span 3"><span class="tag">Beneficiarios</span><p>Propietario (información confiable y supervisión remota) y clientes (productos disponibles)</p></div>
+  </div>
+  <div class="page">02 / 15</div>
+</div></section>
+
+<!-- ===== 3. PROBLEMÁTICA ===== -->
+
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>02</b>Problemática</div>
+  <h2 class="reveal d1">Papelería JAYA, <em>sin respaldo</em></h2>
+  <div class="prob">
+    <div class="card reveal d2"><span class="num">i.</span><h3>Registros manuales</h3><p>Control de ventas, inventario, entradas y gastos mediante una libreta.</p></div>
+    <div class="card reveal d3"><span class="num">ii.</span><h3>Falta de identificación</h3><p>No se identifica quién realiza cada registro de venta.</p></div>
+    <div class="card big reveal d6"><span class="tag">Consecuencia real</span><div class="n">5-7<small>HORAS</small></div><p>Dedicadas a reconstruir registros del inventario tras el incidente.</p></div>
+    <div class="card reveal d4"><span class="num">iii.</span><h3>Riesgo de pérdida de información</h3><p>Una libreta mojada dificultó recuperar los registros del negocio.</p></div>
+    <div class="card reveal d5"><span class="num">iv.</span><h3>Control de inventario</h3><p>Actualización manual de existencias al finalizar la jornada.</p></div>
+  </div>
+  <div class="page">03 / 15</div>
+</div></section>
+
+<!-- ===== 4. JUSTIFICACIÓN ===== -->
+<!-- NOTAS DEL ORADOR 4: (1 min 05 s) Como acaban de ver, todo el control de la papelería depende de una sola libreta, y cuando se mojó, reconstruir el inventario tomó entre 5 y 7 horas. Ese es el punto de partida de nuestro proyecto.
+
+Un sistema de punto de venta web resuelve directamente esa situación: guarda la información de forma digital y con respaldos, así que ya no depende de un solo medio físico; actualiza las existencias en cada venta y no al final del día, y registra qué usuario hizo cada operación.
+
+Esto tiene tres impactos. En lo económico, se reducen las pérdidas por faltantes y errores, y se planean mejor las compras. En lo social, los clientes encuentran los productos disponibles y un pequeño comercio de Ixil se digitaliza. Y en lo académico, aplicamos en un caso real lo aprendido en la carrera y vinculamos al Tecnológico con un negocio de la región. -->
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>03</b>Justificación</div>
+  <h2 class="reveal d1">¿Por qué?</h2>
+  <div class="just">
+    <div class="why reveal d2"><span class="tag">De una libreta a un sistema web</span>
+      <p>Respaldos de la información, <em>existencias actualizadas en cada venta</em> y registro de quién hace cada operación.</p></div>
+    <div class="imp">
+      <div class="card reveal d3"><span class="tag">Económico</span><p>Menos pérdidas por faltantes y mejores compras</p></div>
+      <div class="card reveal d4"><span class="tag">Social</span><p>Mejor atención y digitalización de un comercio local</p></div>
+      <div class="card reveal d5"><span class="tag">Académico</span><p>Aplicación de la carrera y vinculación con el sector productivo</p></div>
+    </div>
+  </div>
+  <div class="page">04 / 15</div>
+</div></section>
+
+<!-- ===== 5. OBJETIVOS ===== -->
+<!-- NOTAS DEL ORADOR 5: (1 min 15 s) Nuestro objetivo general es desarrollar un sistema de punto de venta web para la papelería JAYA, con registro de ventas, gastos y entradas de mercancía, actualización inmediata de existencias, consulta remota y control de acceso de usuarios, para mejorar la confiabilidad de la información y la supervisión de las operaciones.
+
+Para lograrlo, planteamos nueve objetivos específicos en etapas. Primero, análisis y diseño: levantar requerimientos con el propietario y el empleado, y diseñar la base de datos y la interfaz. Segundo, desarrollo: los módulos de ventas, inventario con alertas de reabastecimiento, gastos, usuarios con roles de administrador y vendedor, y un historial de cada cambio, que responde a que hoy no se sabe quién hizo cada registro. Por último, reportes de ventas, gastos, entradas e inventario que el propietario podrá consultar de forma remota, y la validación con pruebas funcionales, de integración, de usabilidad y de aceptación junto con el personal de la papelería. -->
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>04</b>Objetivos</div>
+  <div class="gen reveal d1"><span class="tag">Objetivo general</span>
+    <p>Desarrollar un sistema de punto de venta web para la papelería JAYA, con registro de ventas, gastos y entradas de mercancía, actualización inmediata de existencias, consulta remota de la información y control de acceso de los usuarios por parte del administrador, para la mejora de la confiabilidad de la información y de la supervisión de las operaciones.</p></div>
+  <div class="obj">
+    <div class="card reveal d2"><span class="tag">Análisis y diseño</span><ul>
+      <li><span>1</span>Requerimientos con entrevistas y observación</li><li><span>2</span>Base de datos e interfaz</li></ul></div>
+    <div class="card reveal d3"><span class="tag">Desarrollo</span><ul>
+      <li><span>3</span>Ventas</li><li><span>4</span>Inventario y alertas</li><li><span>5</span>Gastos</li><li><span>6</span>Usuarios y permisos</li><li><span>7</span>Historial de operaciones</li></ul></div>
+    <div class="card reveal d4"><span class="tag">Reportes y validación</span><ul>
+      <li><span>8</span>Reportes con consulta remota</li><li><span>9</span>Pruebas funcionales, de integración, usabilidad y aceptación</li></ul></div>
+  </div>
+  <div class="page">05 / 15</div>
+</div></section>
+
+<!-- ===== OBJETIVOS ESPECÍFICOS (detalle): Análisis y diseño ===== -->
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>04</b>Objetivos específicos</div>
+  <h2 class="reveal d1" style="font-size:68px">Análisis y <em>diseño</em></h2>
+  <div class="od od2">
+    <div class="card orow reveal d2"><div class="on">1</div><div class="ob"><h3>Identificar los requerimientos funcionales y no funcionales del sistema</h3><div class="cols"><div><span class="tag">Mediante</span><p>entrevistas al administrador y a los empleados y observación de los procesos actuales de venta, inventario, gastos y registro</p></div><div><span class="tag">Para</span><p>la definición del alcance del sistema</p></div></div></div></div>
+    <div class="card orow reveal d3"><div class="on">2</div><div class="ob"><h3>Diseñar la base de datos y la interfaz del sistema</h3><div class="cols"><div><span class="tag">A partir de</span><p>los requerimientos identificados y las actividades de cada tipo de usuario</p></div><div><span class="tag">Para</span><p>el establecimiento de la estructura de la información y la navegación del sistema</p></div></div></div></div>
+  </div>
+  <div class="page">06 / 15</div>
+</div></section>
+
+<!-- ===== OBJETIVOS ESPECÍFICOS (detalle): Desarrollo de módulos ===== -->
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>04</b>Objetivos específicos</div>
+  <h2 class="reveal d1" style="font-size:68px">Desarrollo <em>de módulos</em></h2>
+  <div class="od od3">
+    <div class="card orow reveal d2"><div class="on">3</div><div class="ob"><h3>Desarrollar el módulo de ventas</h3><div class="cols"><div><span class="tag">Mediante</span><p>el registro de cada operación con descuento inmediato de las existencias</p></div><div><span class="tag">Para</span><p>la prevención de diferencias entre los registros y el inventario físico</p></div></div></div></div>
+    <div class="card orow reveal d3"><div class="on">4</div><div class="ob"><h3>Desarrollar el módulo de inventario</h3><div class="cols"><div><span class="tag">Mediante</span><p>el registro de productos, la consulta de existencias y alertas de reabastecimiento</p></div><div><span class="tag">Para</span><p>la disponibilidad oportuna de los productos solicitados por los clientes</p></div></div></div></div>
+    <div class="card orow reveal d4"><div class="on">5</div><div class="ob"><h3>Desarrollar el módulo de gastos</h3><div class="cols"><div><span class="tag">Mediante</span><p>el registro de egresos de dos tipos: de proveedor, con captura de los productos recibidos para su entrada al inventario, y generales, como luz o internet, con captura de un solo monto</p></div><div><span class="tag">Para</span><p>el control de las salidas de dinero y la actualización de las existencias</p></div></div></div></div>
+  </div>
+  <div class="page">07 / 15</div>
+</div></section>
+
+<!-- ===== OBJETIVOS ESPECÍFICOS (detalle): Desarrollo: usuarios e historial ===== -->
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>04</b>Objetivos específicos</div>
+  <h2 class="reveal d1" style="font-size:68px">Desarrollo: <em>usuarios e historial</em></h2>
+  <div class="od od2">
+    <div class="card orow reveal d2"><div class="on">6</div><div class="ob"><h3>Desarrollar el módulo de usuarios y permisos</h3><div class="cols"><div><span class="tag">Mediante</span><p>cuentas con roles de administrador y vendedor</p></div><div><span class="tag">Para</span><p>la restricción de funciones y la identificación del autor de cada registro</p></div></div></div></div>
+    <div class="card orow reveal d3"><div class="on">7</div><div class="ob"><h3>Desarrollar un historial de operaciones</h3><div class="cols"><div><span class="tag">Mediante</span><p>el almacenamiento de cada alta, modificación y eliminación en ventas, inventario y gastos</p></div><div><span class="tag">Para</span><p>la detección de errores, la asignación de responsabilidades y la recuperación de la información</p></div></div></div></div>
+  </div>
+  <div class="page">08 / 15</div>
+</div></section>
+
+<!-- ===== OBJETIVOS ESPECÍFICOS (detalle): Reportes y validación ===== -->
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>04</b>Objetivos específicos</div>
+  <h2 class="reveal d1" style="font-size:68px">Reportes y <em>validación</em></h2>
+  <div class="od od2">
+    <div class="card orow reveal d2"><div class="on">8</div><div class="ob"><h3>Generar reportes de ventas diarias, gastos, entradas de mercancía y estado del inventario</h3><div class="cols"><div><span class="tag">Mediante</span><p>el sistema web</p></div><div><span class="tag">Para</span><p>la consulta remota del administrador</p></div></div></div></div>
+    <div class="card orow reveal d3"><div class="on">9</div><div class="ob"><h3>Validar el funcionamiento del sistema</h3><div class="cols"><div><span class="tag">Mediante</span><p>pruebas funcionales, de integración, usabilidad y aceptación con el administrador y los vendedores de la papelería</p></div><div><span class="tag">Para</span><p>la verificación de los módulos establecidos y el cumplimiento de los requerimientos</p></div></div></div></div>
+  </div>
+  <div class="page">09 / 15</div>
+</div></section>
+
+<!-- ===== 6. ALCANCES Y LIMITACIONES ===== -->
+
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>05</b>Alcances y limitaciones</div>
+  <h2 class="reveal d1">Hasta dónde <em>llega</em></h2>
+  <div class="alc">
+    <div class="card yes reveal d2"><h3><i>✓</i>¿Qué hará?</h3><ul>
+      <li>Control de inventario y ventas</li><li>Registro de mercancía y gastos</li><li>Usuarios y permisos</li><li>Reportes y alertas de stock</li></ul></div>
+    <div class="card no reveal d3"><h3><i>✕</i>¿Qué no hará?</h3><ul>
+      <li>Ventas en línea</li><li>Facturación electrónica</li><li>Pagos con tarjeta</li><li>Gestión de sucursales</li></ul></div>
+    <div class="card lim reveal d4"><h3><i>!</i>Limitaciones técnicas</h3><ul>
+      <li>Requiere internet y navegador compatible</li><li>Captura manual de registros anteriores</li><li>Verificación física del inventario</li></ul></div>
+    <div class="card res reveal d5"><h3><i>⏱</i>Tiempo y recursos</h3><ul>
+      <li>Desarrollo de 6 semanas</li><li>Tecnologías definidas</li><li>Equipo de cómputo e internet</li></ul></div>
+  </div>
+  <div class="page">10 / 15</div>
+</div></section>
+
+<!-- ===== 7. DESCRIPCIÓN ===== -->
+
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>06</b>Descripción</div>
+  <h2 class="reveal d1">Sistema de punto de <em>venta web</em></h2>
+  <div class="mods">
+    <div class="card reveal d2"><h3>Inventario</h3><p>Productos, existencias y alertas de abastecimiento.</p></div>
+    <div class="card reveal d3"><h3>Ventas</h3><p>Registros de operaciones, pago en efectivo y actualización del stock.</p></div>
+    <div class="card reveal d4"><h3>Entrada</h3><p>Registro de mercancía recibida y actualización de existencias.</p></div>
+    <div class="card reveal d5"><h3>Gastos</h3><p>Control de egresos del establecimiento.</p></div>
+    <div class="card reveal d6"><h3>Reportes</h3><p>Consulta de operaciones por fecha y periodo.</p></div>
+    <div class="card reveal d7"><h3>Usuarios</h3><p>Accesos y permisos para administrador y vendedor.</p></div>
+  </div>
+  <div class="flow3 reveal d8"><div class="lab">Funcionamiento general</div>
+    <div class="st">Registro de operaciones</div><div class="ar">→</div><div class="st">Actualización de datos</div><div class="ar">→</div><div class="st">Consulta y supervisión</div></div>
+  <div class="page">11 / 15</div>
+</div></section>
+
+<!-- ===== 8. USUARIOS, ROLES Y TECNOLOGÍAS ===== -->
+<!-- NOTAS DEL ORADOR 8: (40 s) El sistema tiene dos tipos de usuario. El administrador gestiona cuentas y permisos, y tiene acceso a inventario, ventas, entradas, gastos, reportes e historial. El vendedor se concentra en registrar ventas y consultar inventario; cualquier otra función depende de los permisos que le asigne el administrador. En el diagrama de casos de uso se ve esa diferencia. En tecnologías, la interfaz web usa React y CSS, la lógica del servidor Python y los datos se guardan en MySQL. Node.js solo se usa como herramienta para desarrollar en React. -->
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>07</b>Usuarios, roles y tecnologías</div>
+  <h2 class="reveal d1" style="font-size:72px">Dos roles, <em>tres tecnologías</em></h2>
+  <div class="rt">
+    <div class="left">
+      <div class="card reveal d2"><span class="tag">Roles</span>
+        <div class="role first"><h3>Administrador</h3><p>Gestiona cuentas, permisos, inventario, ventas, entradas, gastos, reportes e historial.</p></div>
+        <div class="role"><h3>Vendedor</h3><p>Registra ventas y consulta inventario; lo demás, según sus permisos.</p></div></div>
+      <div class="card reveal d3"><span class="tag">Tecnologías</span><div class="tech">
+        <div><b>React-JS y CSS</b><span>Interfaz web</span></div>
+        <div><b>Python con FastAPI</b><span>Lógica del servidor</span></div>
+        <div><b>MySQL</b><span>Base de datos</span></div></div></div>
+    </div>
+    <div class="shot reveal d4"><img src="Diagrama%20de%20Casos%20de%20Uso.png" alt="Diagrama de casos de uso: administrador y vendedor"></div>
+  </div>
+  <div class="page">12 / 15</div>
+</div></section>
+
+<!-- ===== 9. DIAGRAMA DE PROCESOS (imagen PNG) ===== -->
+<!-- NOTAS DEL ORADOR 9: (30 s) Este diagrama muestra el flujo del sistema. El usuario inicia sesión y el sistema valida sus credenciales. Al elegir un módulo, valida sus permisos; si no los tiene, muestra acceso denegado. Si los tiene, realiza la operación; en ventas también se revisan las existencias. La información se guarda en la base de datos con un historial del usuario y la fecha. Al terminar, continúa con otra operación o cierra sesión. -->
+<section class="slide s-proc"><div class="pad" style="padding-top:80px">
+  <div class="eyebrow reveal"><b>08</b>Diagrama de procesos</div>
+  <div class="shot reveal d2"><img src="Diagrama%20de%20Procesos%20v2.png" alt="Diagrama de procesos del sistema"></div>
+  <div class="page">13 / 15</div>
+</div></section>
+
+<!-- ===== 10. NORMAS ===== -->
+<!-- NOTAS DEL ORADOR 10: (1 min 05 s) El proyecto se apoya en cuatro normas. ISO/IEC 25010 define la calidad del producto: en las pruebas con el propietario y el empleado evaluaremos adecuación funcional, eficiencia, capacidad de interacción, fiabilidad y seguridad, es decir, que los módulos funcionen, que la interfaz sea fácil de usar y que los tiempos de respuesta sean adecuados. ISO/IEC 27001 aporta controles de seguridad: control de acceso y derechos de acceso, que vemos en el inicio de sesión y los permisos por rol; autenticación y criptografía para proteger credenciales; registro de actividades, que es el historial, y respaldos, que evitan repetir lo que pasó con la libreta mojada. ISO/IEC 29110 organiza el trabajo con su perfil básico para equipos muy pequeños: gestión del proyecto e implementación del software. Por último, IEEE 830 nos sirvió para documentar los requisitos; como ese estándar fue sustituido, la referencia vigente es ISO/IEC/IEEE 29148 de 2018. -->
+<section class="slide"><div class="pad">
+  <div class="eyebrow reveal"><b>09</b>Normas de calidad y aplicación</div>
+  <h2 class="reveal d1">Cuatro normas <em>de respaldo</em></h2>
+  <div class="norm">
+    <div class="card reveal d2" data-n="01"><span class="tag">Calidad del producto</span><h3>ISO/IEC 25010</h3><p>Evalúa funcionalidad, usabilidad, rendimiento, fiabilidad y seguridad en las pruebas con el propietario y el empleado.</p></div>
+    <div class="card reveal d3" data-n="02"><span class="tag">Requisitos</span><h3>IEEE 830</h3><p>Documenta 16 requisitos funcionales y 8 no funcionales.</p></div>
+    <div class="card reveal d4" data-n="03"><span class="tag">Seguridad</span><h3>ISO/IEC 27001</h3><p>Inicio de sesión, permisos por rol, credenciales protegidas, historial y respaldos.</p></div>
+    <div class="card reveal d5" data-n="04"><span class="tag">Gestión del proyecto</span><h3>ISO/IEC 29110</h3><p>Perfil básico para equipos muy pequeños: roles, cronograma, seguimiento e implementación por etapas.</p></div>
+  </div>
+  <div class="page">14 / 15</div>
+</div></section>
+
+<!-- ===== 11. CONCLUSIÓN ===== -->
+<!-- NOTAS DEL ORADOR 11: (15 s) En conclusión, con roles bien definidos, una arquitectura web y normas de calidad, la papelería JAYA pasa de depender de una libreta a tener información confiable, segura y respaldada. Gracias. -->
+<section class="slide s-end">
+  <div class="big-q">
+    <div class="eyebrow reveal"><b>10</b>Fin</div>
+    <h2 class="reveal d1">De la libreta <em>al sistema</em></h2>
+    <p class="q reveal d2">Gracias.</p>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- Edición en línea: pasa el mouse por la esquina superior izquierda o pulsa E -->
+<div class="edit-hotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Modo edición (E)">✏️ Editar</button>
+<div class="hint">← → · ESPACIO · E editar</div>
+
+<script>
+/* === CONTROLADOR DE LA PRESENTACIÓN === */
+class SlidePresentation{
+  constructor(){
+    this.slides=[...document.querySelectorAll('.slide')];
+    this.stage=document.getElementById('deckStage');
+    this.bar=document.getElementById('progress');
+    this.i=0; this.scale(); addEventListener('resize',()=>this.scale());
+    this.keys(); this.touch(); this.show((parseInt(location.hash.slice(1))||1)-1);
+  }
+  /* escala todo el escenario 1920x1080 de forma uniforme */
+  scale(){
+    const f=Math.min(innerWidth/1920,innerHeight/1080);
+    this.stage.style.transform=`translate(${(innerWidth-1920*f)/2}px,${(innerHeight-1080*f)/2}px) scale(${f})`;
+  }
+  keys(){
+    addEventListener('keydown',e=>{
+      if(e.target.isContentEditable)return;
+      if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();this.show(this.i+1)}
+      else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();this.show(this.i-1)}
+      else if(e.key==='Home')this.show(0); else if(e.key==='End')this.show(this.slides.length-1);
+    });
+    addEventListener('wheel',e=>{if(document.body.classList.contains('editing'))return;
+      if(Math.abs(e.deltaY)>40){clearTimeout(this.w);this.w=setTimeout(()=>this.show(this.i+(e.deltaY>0?1:-1)),60)}},{passive:true});
+    addEventListener('click',e=>{if(document.body.classList.contains('editing')||e.target.closest('.edit-toggle,.edit-hotzone'))return;
+      this.show(this.i+(e.clientX>innerWidth/2?1:-1))});
+  }
+  touch(){
+    let x=0; addEventListener('touchstart',e=>x=e.touches[0].clientX,{passive:true});
+    addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-x;if(Math.abs(d)>50)this.show(this.i+(d<0?1:-1))},{passive:true});
+  }
+  show(n){
+    this.i=Math.max(0,Math.min(n,this.slides.length-1));
+    this.slides.forEach((s,k)=>{s.classList.toggle('active',k===this.i);s.classList.toggle('visible',k===this.i)});
+    this.bar.style.width=((this.i+1)/this.slides.length*100)+'%';
+    try{history.replaceState(null,'','#'+(this.i+1))}catch(e){}
+  }
+}
+const deck=new SlidePresentation();
+
+/* === EDICIÓN EN LÍNEA (E o esquina superior izquierda; Ctrl+S guarda) === */
+const tgl=document.getElementById('editToggle'),hz=document.querySelector('.edit-hotzone');let ht,editing=false;
+function toggleEdit(){editing=!editing;document.body.classList.toggle('editing',editing);tgl.classList.toggle('active',editing);
+  document.querySelectorAll('.slide h1,.slide h2,.slide h3,.slide p,.slide li,.slide blockquote,.slide .tag,.slide .st').forEach(el=>el.contentEditable=editing)}
+hz.addEventListener('mouseenter',()=>{clearTimeout(ht);tgl.classList.add('show')});
+[hz,tgl].forEach(el=>el.addEventListener('mouseleave',()=>{ht=setTimeout(()=>{if(!editing)tgl.classList.remove('show')},400)}));
+tgl.addEventListener('mouseenter',()=>clearTimeout(ht)); tgl.addEventListener('click',toggleEdit); hz.addEventListener('click',toggleEdit);
+addEventListener('keydown',e=>{
+  if((e.key==='e'||e.key==='E')&&!e.target.isContentEditable)toggleEdit();
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'&&editing){e.preventDefault();toggleEdit();
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['<!DOCTYPE html>\n'+document.documentElement.outerHTML],{type:'text/html'}));
+    a.download='presentacion-jaya.html';a.click()}
+});
+</script>
+</body>
+</html>
